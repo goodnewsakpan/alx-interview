@@ -1,75 +1,54 @@
 #!/usr/bin/python3
+
 import sys
-import signal
 
-# Initialize global variables
+
+def print_msg(dict_sc, total_file_size):
+    """
+    Method to print
+    Args:
+        dict_sc: dict of status codes
+        total_file_size: total of the file
+    Returns:
+        Nothing
+    """
+
+    print("File size: {}".format(total_file_size))
+    for key, val in sorted(dict_sc.items()):
+        if val != 0:
+            print("{}: {}".format(key, val))
+
+
 total_file_size = 0
-status_codes_count = {
-    "200": 0,
-    "301": 0,
-    "400": 0,
-    "401": 0,
-    "403": 0,
-    "404": 0,
-    "405": 0,
-    "500": 0
-}
-line_count = 0
-
-def print_stats():
-    """Prints the statistics of file size and status codes."""
-    print(f"File size: {total_file_size}")
-    for code in sorted(status_codes_count.keys()):
-        if status_codes_count[code] > 0:
-            print(f"{code}: {status_codes_count[code]}")
-
-def handle_signal(sig, frame):
-    """Handles the interrupt signal and prints the stats before exiting."""
-    print_stats()
-    sys.exit(0)
-
-# Register the signal handler for interrupt (CTRL + C)
-signal.signal(signal.SIGINT, handle_signal)
+code = 0
+counter = 0
+dict_sc = {"200": 0,
+           "301": 0,
+           "400": 0,
+           "401": 0,
+           "403": 0,
+           "404": 0,
+           "405": 0,
+           "500": 0}
 
 try:
     for line in sys.stdin:
-        # Split the line into components based on space
-        parts = line.split()
+        parsed_line = line.split()  # ✄ trimming
+        parsed_line = parsed_line[::-1]  # inverting
 
-        # Skip lines that do not have the expected number of parts
-        if len(parts) < 7:
-            continue
+        if len(parsed_line) > 2:
+            counter += 1
 
-        # Extract the relevant parts of the line
-        ip_address = parts[0]
-        date = parts[3][1:]  # Remove the leading '[' from the date
-        request = parts[5][1:]  # Remove the leading '"' from the request
-        status_code = parts[-2]
-        file_size = parts[-1]
+            if counter <= 10:
+                total_file_size += int(parsed_line[0])  # file size
+                code = parsed_line[1]  # status code
 
-        # Ensure the line matches the expected format
-        if request != "GET":
-            continue
+                if (code in dict_sc.keys()):
+                    dict_sc[code] += 1
 
-        # Convert file size to an integer
-        try:
-            file_size = int(file_size)
-            total_file_size += file_size
-        except ValueError:
-            continue
+            if (counter == 10):
+                print_msg(dict_sc, total_file_size)
+                counter = 0
 
-        # Count the status code if it's one of the expected ones
-        if status_code in status_codes_count:
-            status_codes_count[status_code] += 1
-
-        line_count += 1
-
-        # Print stats after every 10 lines
-        if line_count % 10 == 0:
-            print_stats()
-
-except Exception as e:
-    print(f"Error: {e}", file=sys.stderr)
-
-# Print final stats if the loop ends
-print_stats()
+finally:
+    print_msg(dict_sc, total_file_size)
