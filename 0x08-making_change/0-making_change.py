@@ -1,26 +1,31 @@
 #!/usr/bin/python3
 
-def makeChange(coins, total):
-    # Edge case: If total is 0 or less, return 0 immediately.
-    if total <= 0:
-        return 0
-    
-    # Initialize the dp array, with a large number representing an impossible case
-    dp = [float('inf')] * (total + 1)
-    
-    # Base case: 0 coins are needed to make 0 amount
-    dp[0] = 0
-    
-    # Loop through each coin in the list
-    for coin in coins:
-        for amount in range(coin, total + 1):
-            # If it's possible to form the amount using this coin, update dp[amount]
-            dp[amount] = min(dp[amount], dp[amount - coin] + 1)
-    
-    # If we were able to find a solution for the total, return it; otherwise return -1
-    return dp[total] if dp[total] != float('inf') else -1
+""" Module for solving prime game question """
 
-# Test cases
-print(makeChange([1, 2, 25], 37))  # Output: 7
-print(makeChange([1256, 54, 48, 16, 102], 1453))  # Output: -1
 
+def isWinner(x, nums):
+    """function that checks for the winner"""
+    if not nums or x < 1:
+        return None
+    max_num = max(nums)
+
+    my_filter = [True for _ in range(max(max_num + 1, 2))]
+    for i in range(2, int(pow(max_num, 0.5)) + 1):
+        if not my_filter[i]:
+            continue
+        for j in range(i * i, max_num + 1, i):
+            my_filter[j] = False
+    my_filter[0] = my_filter[1] = False
+    y = 0
+    for i in range(len(my_filter)):
+        if my_filter[i]:
+            y += 1
+        my_filter[i] = y
+    player1 = 0
+    for x in nums:
+        player1 += my_filter[x] % 2 == 1
+    if player1 * 2 == len(nums):
+        return None
+    if player1 * 2 > len(nums):
+        return "Maria"
+    return "Ben"
