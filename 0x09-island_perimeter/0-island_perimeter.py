@@ -1,19 +1,25 @@
 #!/usr/bin/python3
+"""Island perimeter computing module.
+"""
+
+
 def island_perimeter(grid):
+    """Computes the perimeter of an island with no lakes.
+    """
     perimeter = 0
-    rows = len(grid)
-    cols = len(grid[0])
-
-    for r in range(rows):
-        for c in range(cols):
-            if grid[r][c] == 1:
-                # Start by adding 4 for each land cell
-                perimeter += 4
-
-                # Subtract 1 for adjacent land cells (above and left only)
-                if r > 0 and grid[r - 1][c] == 1:  # Check the cell above
-                    perimeter -= 2  # Shared edge between current cell and the cell above
-                if c > 0 and grid[r][c - 1] == 1:  # Check the cell to the left
-                    perimeter -= 2  # Shared edge between current cell and the cell to the left
-
+    if type(grid) != list:
+        return 0
+    n = len(grid)
+    for i, row in enumerate(grid):
+        m = len(row)
+        for j, cell in enumerate(row):
+            if cell == 0:
+                continue
+            edges = (
+                i == 0 or (len(grid[i - 1]) > j and grid[i - 1][j] == 0),
+                j == m - 1 or (m > j + 1 and row[j + 1] == 0),
+                i == n - 1 or (len(grid[i + 1]) > j and grid[i + 1][j] == 0),
+                j == 0 or row[j - 1] == 0,
+            )
+            perimeter += sum(edges)
     return perimeter
